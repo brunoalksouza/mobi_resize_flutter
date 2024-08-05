@@ -1,9 +1,7 @@
 import 'dart:typed_data';
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:mobi_resize_image_flutter/env.dart';
-import 'package:path_provider/path_provider.dart';
 
 class ImageWidget extends StatelessWidget {
   final Uint8List? imageBytes;
@@ -14,9 +12,8 @@ class ImageWidget extends StatelessWidget {
       BuildContext context, Uint8List imageBytes) async {
     try {
       // Obtém o diretório temporário
-      final directory = await getTemporaryDirectory();
       // Define o caminho completo do arquivo
-      final directoryPath = caminhoPasta; // Altere para a pasta desejada
+      const directoryPath = caminhoPasta; // Altere para a pasta desejada
       final directoryFile = Directory(directoryPath);
 
       // Cria o diretório se ele não existir
@@ -24,16 +21,16 @@ class ImageWidget extends StatelessWidget {
         await directoryFile.create(recursive: true);
       }
 
-      final filePath = '$directoryPath/imagem.png'; // Nome do arquivo
+      const filePath = '$directoryPath/imagem.png'; // Nome do arquivo
       final file = File(filePath);
       await file.writeAsBytes(imageBytes);
 
-      // Mostra uma mensagem para o usuário indicando que a imagem foi salva
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Imagem salva em $filePath')),
+        const SnackBar(content: Text('Imagem salva em $filePath')),
       );
     } catch (e) {
-      // Lida com erros aqui
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar a imagem: $e')),
       );
