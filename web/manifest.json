@@ -1,6 +1,6 @@
 {
-    "name": "mobi_resize_image_flutter",
-    "short_name": "mobi_resize_image_flutter",
+    "name": "mobi_resize_flutter",
+    "short_name": "mobi_resize_flutter",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

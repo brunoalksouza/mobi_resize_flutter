@@ -8,13 +8,12 @@ abstract class ImageProcessingService {
   Future<Uint8List?> processImage(File file);
 }
 
-// Concrete implementation of ImageProcessingService
 class ImageProcessor implements ImageProcessingService {
   @override
   Future<Uint8List?> processImage(File file) async {
     final Uint8List imageBytes = await file.readAsBytes();
     final ui.Image image = await _loadImage(imageBytes);
-    final ui.Image resizedImage = await _resizeImage(image, 4320, 1080);
+    final ui.Image resizedImage = await _resizeImage(image, 5760, 1920);
     return await _encodeImage(resizedImage);
   }
 
@@ -31,7 +30,7 @@ class ImageProcessor implements ImageProcessingService {
     final canvas = Canvas(
         recorder,
         Rect.fromPoints(
-          Offset(0, 0),
+          const Offset(0, 0),
           Offset(width.toDouble(), height.toDouble()),
         ));
 

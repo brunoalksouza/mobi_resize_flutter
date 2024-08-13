@@ -2,8 +2,8 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:mobi_resize_image_flutter/services/image_processing.dart';
-import 'package:mobi_resize_image_flutter/widgets/image_widget.dart';
+import 'package:mobi_resize_flutter/services/image_processing.dart';
+import 'package:mobi_resize_flutter/widgets/image_widget.dart';
 
 // Widget for picking and processing images
 class ImagePickerScreen extends StatefulWidget {

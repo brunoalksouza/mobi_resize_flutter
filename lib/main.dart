@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobi_resize_image_flutter/pages/image_picker_screen.dart';
-import 'package:mobi_resize_image_flutter/services/image_processing.dart';
+import 'package:mobi_resize_flutter/pages/image_picker_screen.dart';
+import 'package:mobi_resize_flutter/services/image_processing.dart';
 
 void main() {
   runApp(MyApp());

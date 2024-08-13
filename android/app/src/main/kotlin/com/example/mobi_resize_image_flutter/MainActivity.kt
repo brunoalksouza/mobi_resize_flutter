@@ -1,4 +1,4 @@
-package com.example.mobi_resize_image_flutter
+package com.example.mobi_resize_flutter
 
 import io.flutter.embedding.android.FlutterActivity
 

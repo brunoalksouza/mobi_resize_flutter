@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:mobi_resize_image_flutter/env.dart';
+import 'package:mobi_resize_flutter/env.dart';
 
 class ImageWidget extends StatelessWidget {
   final Uint8List? imageBytes;
@@ -11,9 +11,7 @@ class ImageWidget extends StatelessWidget {
   Future<void> _saveImageToFile(
       BuildContext context, Uint8List imageBytes) async {
     try {
-      // Obtém o diretório temporário
-      // Define o caminho completo do arquivo
-      const directoryPath = caminhoPasta; // Altere para a pasta desejada
+      const directoryPath = caminhoPasta;
       final directoryFile = Directory(directoryPath);
 
       // Cria o diretório se ele não existir
@@ -21,7 +19,7 @@ class ImageWidget extends StatelessWidget {
         await directoryFile.create(recursive: true);
       }
 
-      const filePath = '$directoryPath/imagem.png'; // Nome do arquivo
+      const filePath = '$directoryPath/imagem.png';
       final file = File(filePath);
       await file.writeAsBytes(imageBytes);
 
