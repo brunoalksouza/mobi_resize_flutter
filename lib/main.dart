@@ -4,6 +4,7 @@ import 'package:mobi_resize_flutter/services/image_processing.dart';
 import 'package:mobi_resize_flutter/services/video_processing.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 

@@ -5,8 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-import path_provider_foundation
+import ffmpeg_kit_flutter
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+  FFmpegKitFlutterPlugin.register(with: registry.registrar(forPlugin: "FFmpegKitFlutterPlugin"))
 }
