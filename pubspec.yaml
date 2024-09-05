@@ -36,7 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.6
   ffi: ^2.1.2
   file_picker: ^8.0.6
+<<<<<<< HEAD
   process_run: ^1.1.0
+=======
+  ffmpeg_kit_flutter: ^6.0.3
+>>>>>>> 95552045a4f385cb3b01d3608319c1986d7f3339
 
 dev_dependencies:
   flutter_test:
