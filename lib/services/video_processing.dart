@@ -1,14 +1,13 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 abstract class VideoProcessingService {
-  Future<Uint8List?> processVideo(File file);
+  Future<String?> processVideo(File file);
 }
 
 class VideoProcessor implements VideoProcessingService {
   @override
-  Future<Uint8List?> processVideo(File file) async {
-    // Verifique se o arquivo de entrada existe
+  Future<String?> processVideo(File file) async {
+    // Verifica se o arquivo de entrada existe
     if (!await file.exists()) {
       print('Arquivo de entrada não encontrado: ${file.path}');
       return null;
@@ -25,19 +24,12 @@ class VideoProcessor implements VideoProcessingService {
         '$ffmpegPath -i "${file.path}" -vf scale=5760:1920 "$outputPath"';
 
     // Executa o comando FFmpeg usando o processo do sistema no PowerShell
-    final result = await Process.run(
-      'powershell',
-      ['-Command', command],
-    );
+    final result = await Process.run('powershell', ['-Command', command]);
 
-    // Verifique se o comando foi executado com sucesso
+    // Verifica se o comando foi executado com sucesso
     if (result.exitCode == 0) {
-      // Lê o arquivo de saída como bytes
-      final File outputFile = File(outputPath);
-      if (await outputFile.exists()) {
-        print('Processamento de vídeo concluído com sucesso.');
-        return await outputFile.readAsBytes();
-      }
+      print('Processamento de vídeo concluído com sucesso.');
+      return outputPath; // Retorna o caminho do arquivo processado
     } else {
       // Exibe o erro se o comando falhar
       print('Erro ao processar vídeo: ${result.stderr}');

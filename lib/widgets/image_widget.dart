@@ -49,6 +49,7 @@ class ImageWidget extends StatelessWidget {
             child: FloatingActionButton(
               onPressed: () => _saveImageToFile(context, imageBytes!),
               backgroundColor: Colors.blueGrey,
+              tooltip: 'Download',
               child: const Icon(
                 Icons.download,
                 color: Colors.white,

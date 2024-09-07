@@ -6,7 +6,6 @@ import 'package:mobi_resize_flutter/services/image_processing.dart';
 import 'package:mobi_resize_flutter/services/video_processing.dart';
 import 'package:mobi_resize_flutter/widgets/image_widget.dart';
 
-// Widget for picking and processing media (images/videos)
 class MediaPickerScreen extends StatefulWidget {
   final ImageProcessingService imageProcessor;
   final VideoProcessingService videoProcessor;
@@ -22,6 +21,8 @@ class MediaPickerScreen extends StatefulWidget {
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
   Uint8List? _mediaBytes;
+  bool _isProcessing = false;
+  String? _outputFilePath;
 
   Future<void> _selectMedia() async {
     final result = await FilePicker.platform.pickFiles(
@@ -34,18 +35,25 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       if (filePath != null) {
         final File file = File(filePath);
 
+        setState(() {
+          _isProcessing = true;
+          _outputFilePath = null;
+        });
+
         if (result.files.single.extension?.toLowerCase() == 'mp4' ||
             result.files.single.extension?.toLowerCase() == 'mov') {
-          final Uint8List? processedVideoBytes =
+          final String? processedVideoPath =
               await widget.videoProcessor.processVideo(file);
           setState(() {
-            _mediaBytes = processedVideoBytes;
+            _isProcessing = false;
+            _outputFilePath = processedVideoPath;
           });
         } else {
           final Uint8List? processedImageBytes =
               await widget.imageProcessor.processImage(file);
           setState(() {
             _mediaBytes = processedImageBytes;
+            _isProcessing = false;
           });
         }
       }
@@ -63,13 +71,10 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         backgroundColor: Colors.blueGrey,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 30.0),
+            padding: const EdgeInsets.only(right: 20.0),
             child: IconButton(
-              icon: const Icon(
-                Icons.upload_file,
-                color: Colors.white,
-                size: 30,
-              ),
+              icon:
+                  const Icon(Icons.upload_file, color: Colors.white, size: 30),
               onPressed: _selectMedia,
             ),
           ),
@@ -81,9 +86,27 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(25.0),
-              child: ImageWidget(imageBytes: _mediaBytes),
+              child: _isProcessing
+                  ? CircularProgressIndicator() // Ícone de carregamento
+                  : _outputFilePath != null
+                      ? const Column(
+                          children: [
+                            Icon(Icons.check_circle,
+                                color: Colors.green, size: 50),
+                            Text('Vídeo processado com sucesso!'),
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     if (_outputFilePath != null) {
+                            //       print(
+                            //           'Caminho do vídeo processado: $_outputFilePath');
+                            //     }
+                            //   },
+                            //   child: const Text('Baixar Vídeo Processado'),
+                            // ),
+                          ],
+                        )
+                      : ImageWidget(imageBytes: _mediaBytes),
             ),
-            // Você pode adicionar aqui um widget para exibir o vídeo processado, se necessário
           ],
         ),
       ),
