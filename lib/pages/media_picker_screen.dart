@@ -65,17 +65,25 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Selecionar Mídia',
+          'Redimensionador de Mídia',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.blueGrey,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: IconButton(
-              icon:
-                  const Icon(Icons.upload_file, color: Colors.white, size: 30),
-              onPressed: _selectMedia,
+            child: Row(
+              children: [
+                const Text(
+                  'Selecione a mídia para processar ',
+                  style: TextStyle(color: Colors.white),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.upload_file,
+                      color: Colors.white, size: 30),
+                  onPressed: _selectMedia,
+                ),
+              ],
             ),
           ),
         ],
