@@ -21,8 +21,10 @@ class MediaPickerScreen extends StatefulWidget {
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
   Uint8List? _mediaBytes;
-  bool _isProcessing = false;
-  String? _outputFilePath;
+
+  // Criação dos ValueNotifiers para o estado de processamento e caminho de saída
+  final ValueNotifier<bool> _isProcessing = ValueNotifier(false);
+  final ValueNotifier<String?> _outputFilePath = ValueNotifier(null);
 
   Future<void> _selectMedia() async {
     final result = await FilePicker.platform.pickFiles(
@@ -35,26 +37,21 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       if (filePath != null) {
         final File file = File(filePath);
 
-        setState(() {
-          _isProcessing = true;
-          _outputFilePath = null;
-        });
+        // Atualizar o estado usando ValueNotifier
+        _isProcessing.value = true;
+        _outputFilePath.value = null;
 
         if (result.files.single.extension?.toLowerCase() == 'mp4' ||
             result.files.single.extension?.toLowerCase() == 'mov') {
           final String? processedVideoPath =
               await widget.videoProcessor.processVideo(file);
-          setState(() {
-            _isProcessing = false;
-            _outputFilePath = processedVideoPath;
-          });
+          _isProcessing.value = false;
+          _outputFilePath.value = processedVideoPath;
         } else {
           final Uint8List? processedImageBytes =
               await widget.imageProcessor.processImage(file);
-          setState(() {
-            _mediaBytes = processedImageBytes;
-            _isProcessing = false;
-          });
+          _mediaBytes = processedImageBytes;
+          _isProcessing.value = false;
         }
       }
     }
@@ -94,26 +91,31 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(25.0),
-              child: _isProcessing
-                  ? CircularProgressIndicator() // Ícone de carregamento
-                  : _outputFilePath != null
-                      ? const Column(
-                          children: [
-                            Icon(Icons.check_circle,
-                                color: Colors.green, size: 50),
-                            Text('Vídeo processado com sucesso!'),
-                            // TextButton(
-                            //   onPressed: () async {
-                            //     if (_outputFilePath != null) {
-                            //       print(
-                            //           'Caminho do vídeo processado: $_outputFilePath');
-                            //     }
-                            //   },
-                            //   child: const Text('Baixar Vídeo Processado'),
-                            // ),
-                          ],
-                        )
-                      : ImageWidget(imageBytes: _mediaBytes),
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _isProcessing,
+                builder: (context, isProcessing, child) {
+                  if (isProcessing) {
+                    return CircularProgressIndicator();
+                  } else {
+                    return ValueListenableBuilder<String?>(
+                      valueListenable: _outputFilePath,
+                      builder: (context, outputPath, child) {
+                        if (outputPath != null) {
+                          return const Column(
+                            children: [
+                              Icon(Icons.check_circle,
+                                  color: Colors.green, size: 50),
+                              Text('Vídeo processado com sucesso!'),
+                            ],
+                          );
+                        } else {
+                          return ImageWidget(imageBytes: _mediaBytes);
+                        }
+                      },
+                    );
+                  }
+                },
+              ),
             ),
           ],
         ),
