@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:mobi_resize_flutter/env.dart';
+
 abstract class VideoProcessingService {
   Future<String?> processVideo(File file);
 }
@@ -7,14 +9,23 @@ abstract class VideoProcessingService {
 class VideoProcessor implements VideoProcessingService {
   @override
   Future<String?> processVideo(File file) async {
+    // Caminho do diretório onde o vídeo processado será salvo
+    const String directoryPath = caminhoPasta;
+
     // Verifica se o arquivo de entrada existe
     if (!await file.exists()) {
-      print('Arquivo de entrada não encontrado: ${file.path}');
       return null;
     }
 
+    // Verifica se o diretório de saída existe
+    final outputDirectory = Directory(directoryPath);
+    if (!await outputDirectory.exists()) {
+      // Cria o diretório se ele não existir
+      await outputDirectory.create(recursive: true);
+    }
+
     // Caminho para o arquivo de saída
-    final String outputPath = '${file.parent.path}/output.mp4';
+    const String outputPath = '$directoryPath/output.mp4';
 
     // Caminho completo para o executável do FFmpeg usando caminho relativo
     const String ffmpegPath = 'ffmpeg/bin/ffmpeg.exe';
@@ -28,12 +39,8 @@ class VideoProcessor implements VideoProcessingService {
 
     // Verifica se o comando foi executado com sucesso
     if (result.exitCode == 0) {
-      print('Processamento de vídeo concluído com sucesso.');
       return outputPath; // Retorna o caminho do arquivo processado
-    } else {
-      // Exibe o erro se o comando falhar
-      print('Erro ao processar vídeo: ${result.stderr}');
-    }
+    } else {}
 
     return null;
   }

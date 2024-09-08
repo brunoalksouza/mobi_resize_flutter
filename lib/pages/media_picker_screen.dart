@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:mobi_resize_flutter/env.dart';
 import 'package:mobi_resize_flutter/services/image_processing.dart';
 import 'package:mobi_resize_flutter/services/video_processing.dart';
 import 'package:mobi_resize_flutter/widgets/image_widget.dart';
@@ -105,7 +106,8 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                             children: [
                               Icon(Icons.check_circle,
                                   color: Colors.green, size: 50),
-                              Text('Vídeo processado com sucesso!'),
+                              Text(
+                                  'Vídeo processado e adicionado com sucesso em $caminhoPasta'),
                             ],
                           );
                         } else {
