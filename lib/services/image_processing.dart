@@ -13,7 +13,7 @@ class ImageProcessor implements ImageProcessingService {
   Future<Uint8List?> processImage(File file) async {
     final Uint8List imageBytes = await file.readAsBytes();
     final ui.Image image = await _loadImage(imageBytes);
-    final ui.Image resizedImage = await _resizeImage(image, 5760, 1920);
+    final ui.Image resizedImage = await _resizeImage(image, 1920, 1080);
     return await _encodeImage(resizedImage);
   }
 

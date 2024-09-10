@@ -111,7 +111,20 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                             ],
                           );
                         } else {
-                          return ImageWidget(imageBytes: _mediaBytes);
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    30.0), // Espaçamento lateral de 30px
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width -
+                                    60, // Ajusta a largura para considerar o padding de 30px em cada lado
+                                maxHeight: MediaQuery.of(context).size.height *
+                                    0.8, // Limita a altura a 80% da tela
+                              ),
+                              child: ImageWidget(imageBytes: _mediaBytes),
+                            ),
+                          );
                         }
                       },
                     );

@@ -32,7 +32,7 @@ class VideoProcessor implements VideoProcessingService {
 
     // Comando FFmpeg para redimensionar o vídeo
     String command =
-        '$ffmpegPath -i "${file.path}" -vf scale=5760:1920 "$outputPath"';
+        '$ffmpegPath -i "${file.path}" -vf scale=1920:1080 "$outputPath"';
 
     // Executa o comando FFmpeg usando o processo do sistema no PowerShell
     final result = await Process.run('powershell', ['-Command', command]);
