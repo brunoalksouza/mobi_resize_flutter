@@ -1,6 +1,6 @@
 import 'dart:io';
-
 import 'package:mobi_resize_flutter/env.dart';
+import 'package:path/path.dart' as p; // Importando a biblioteca path
 
 abstract class VideoProcessingService {
   Future<String?> processVideo(File file);
@@ -24,8 +24,11 @@ class VideoProcessor implements VideoProcessingService {
       await outputDirectory.create(recursive: true);
     }
 
-    // Caminho para o arquivo de saída
-    const String outputPath = '$directoryPath/output.mp4';
+    // Obtém o nome do arquivo original
+    final originalFileName = p.basename(file.path);
+
+    // Caminho para o arquivo de saída, mantendo o nome original do arquivo
+    final String outputPath = '$directoryPath/$originalFileName';
 
     // Caminho completo para o executável do FFmpeg usando caminho relativo
     const String ffmpegPath = 'ffmpeg/bin/ffmpeg.exe';
@@ -40,7 +43,10 @@ class VideoProcessor implements VideoProcessingService {
     // Verifica se o comando foi executado com sucesso
     if (result.exitCode == 0) {
       return outputPath; // Retorna o caminho do arquivo processado
-    } else {}
+    } else {
+      // Se necessário, exiba a mensagem de erro
+      print('Erro ao processar vídeo: ${result.stderr}');
+    }
 
     return null;
   }
