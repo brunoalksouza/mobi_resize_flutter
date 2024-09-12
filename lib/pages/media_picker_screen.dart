@@ -31,7 +31,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
   Future<void> _selectMedia() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov'],
+      allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'mkv'],
     );
 
     if (result != null && result.files.isNotEmpty) {
@@ -45,7 +45,8 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         _outputFilePath.value = null;
 
         if (result.files.single.extension?.toLowerCase() == 'mp4' ||
-            result.files.single.extension?.toLowerCase() == 'mov') {
+            result.files.single.extension?.toLowerCase() == 'mov' ||
+            result.files.single.extension?.toLowerCase() == 'mkv') {
           final String? processedVideoPath =
               await widget.videoProcessor.processVideo(file);
           _isProcessing.value = false;
