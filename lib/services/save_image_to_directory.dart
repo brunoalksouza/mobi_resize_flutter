@@ -2,8 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:mobi_resize_flutter/env.dart';
+import 'package:path/path.dart' as p;
 
-void SaveImageToDirectory(BuildContext context, Uint8List imageBytes) async {
+void SaveImageToDirectory(
+    BuildContext context, Uint8List imageBytes, File file) async {
   try {
     const directoryPath = caminhoPasta;
     final directoryFile = Directory(directoryPath);
@@ -13,13 +15,15 @@ void SaveImageToDirectory(BuildContext context, Uint8List imageBytes) async {
       await directoryFile.create(recursive: true);
     }
 
-    const filePath = '$directoryPath/imagem.png';
-    final file = File(filePath);
-    await file.writeAsBytes(imageBytes);
+    final originalFileName = p.basename(file.path);
 
-    // ignore: use_build_context_synchronously
+    final filePath = '$directoryPath/$originalFileName';
+
+    final newFile = File(filePath);
+    await newFile.writeAsBytes(imageBytes);
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mídia salva em $filePath')),
+      SnackBar(content: Text('Mídia salva em $filePath')),
     );
   } catch (e) {
     // ignore: use_build_context_synchronously

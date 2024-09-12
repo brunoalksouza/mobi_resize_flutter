@@ -1,11 +1,13 @@
 import 'dart:typed_data';
+import 'dart:io'; // Importação necessária para usar File
 import 'package:flutter/material.dart';
 import 'package:mobi_resize_flutter/services/save_image_to_directory.dart';
 
 class ImageWidget extends StatelessWidget {
   final Uint8List? imageBytes;
+  final File file; // Adiciona o parâmetro file
 
-  ImageWidget({this.imageBytes});
+  ImageWidget({this.imageBytes, required this.file});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class ImageWidget extends StatelessWidget {
             bottom: 10,
             right: 10,
             child: FloatingActionButton(
-              onPressed: () => SaveImageToDirectory(context, imageBytes!),
+              onPressed: () => SaveImageToDirectory(context, imageBytes!, file),
               backgroundColor: Colors.blueGrey,
               tooltip: 'Download',
               child: const Icon(

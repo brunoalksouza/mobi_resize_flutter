@@ -22,6 +22,7 @@ class MediaPickerScreen extends StatefulWidget {
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
   Uint8List? _mediaBytes;
+  File? _selectedFile; // Variável para armazenar o arquivo selecionado
 
   // Criação dos ValueNotifiers para o estado de processamento e caminho de saída
   final ValueNotifier<bool> _isProcessing = ValueNotifier(false);
@@ -37,6 +38,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       final filePath = result.files.single.path;
       if (filePath != null) {
         final File file = File(filePath);
+        _selectedFile = file; // Armazena o arquivo selecionado
 
         // Atualizar o estado usando ValueNotifier
         _isProcessing.value = true;
@@ -96,7 +98,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                 valueListenable: _isProcessing,
                 builder: (context, isProcessing, child) {
                   if (isProcessing) {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   } else {
                     return ValueListenableBuilder<String?>(
                       valueListenable: _outputFilePath,
@@ -122,7 +124,14 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                                 maxHeight: MediaQuery.of(context).size.height *
                                     0.8, // Limita a altura a 80% da tela
                               ),
-                              child: ImageWidget(imageBytes: _mediaBytes),
+                              child: _selectedFile != null
+                                  ? ImageWidget(
+                                      imageBytes: _mediaBytes,
+                                      file: _selectedFile!,
+                                    )
+                                  : const Center(
+                                      child: Text('Nenhuma mídia selecionada.'),
+                                    ),
                             ),
                           );
                         }
