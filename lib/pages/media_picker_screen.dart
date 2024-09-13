@@ -1,17 +1,15 @@
-import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:mobi_resize_flutter/env.dart';
 import 'package:mobi_resize_flutter/services/image_processing.dart';
 import 'package:mobi_resize_flutter/services/video_processing.dart';
-import 'package:mobi_resize_flutter/widgets/image_widget.dart';
 
 class MediaPickerScreen extends StatefulWidget {
   final ImageProcessingService imageProcessor;
   final VideoProcessingService videoProcessor;
 
-  MediaPickerScreen({
+  const MediaPickerScreen({
+    super.key,
     required this.imageProcessor,
     required this.videoProcessor,
   });
@@ -21,12 +19,10 @@ class MediaPickerScreen extends StatefulWidget {
 }
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
-  Uint8List? _mediaBytes;
-  File? _selectedFile; // Variável para armazenar o arquivo selecionado
-
-  // Criação dos ValueNotifiers para o estado de processamento e caminho de saída
+  // ValueNotifiers para estado de processamento e caminhos de saída
   final ValueNotifier<bool> _isProcessing = ValueNotifier(false);
   final ValueNotifier<String?> _outputFilePath = ValueNotifier(null);
+  final ValueNotifier<String?> _outputImagePath = ValueNotifier(null);
 
   Future<void> _selectMedia() async {
     final result = await FilePicker.platform.pickFiles(
@@ -38,11 +34,10 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       final filePath = result.files.single.path;
       if (filePath != null) {
         final File file = File(filePath);
-        _selectedFile = file; // Armazena o arquivo selecionado
 
-        // Atualizar o estado usando ValueNotifier
         _isProcessing.value = true;
         _outputFilePath.value = null;
+        _outputImagePath.value = null;
 
         if (result.files.single.extension?.toLowerCase() == 'mp4' ||
             result.files.single.extension?.toLowerCase() == 'mov' ||
@@ -52,10 +47,10 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           _isProcessing.value = false;
           _outputFilePath.value = processedVideoPath;
         } else {
-          final Uint8List? processedImageBytes =
+          final String? processedImagePath =
               await widget.imageProcessor.processImage(file);
-          _mediaBytes = processedImageBytes;
           _isProcessing.value = false;
+          _outputImagePath.value = processedImagePath;
         }
       }
     }
@@ -90,59 +85,49 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         ],
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(25.0),
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _isProcessing,
-                builder: (context, isProcessing, child) {
-                  if (isProcessing) {
-                    return const CircularProgressIndicator();
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _isProcessing,
+          builder: (context, isProcessing, child) {
+            if (isProcessing) {
+              return const CircularProgressIndicator();
+            } else {
+              // Usando AnimatedBuilder para escutar ambos os ValueNotifiers
+              return AnimatedBuilder(
+                animation:
+                    Listenable.merge([_outputFilePath, _outputImagePath]),
+                builder: (context, child) {
+                  if (_outputFilePath.value != null) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle,
+                            color: Colors.green, size: 50),
+                        Text(
+                            'Vídeo processado e adicionado com sucesso em ${_outputFilePath.value}'),
+                      ],
+                    );
+                  } else if (_outputImagePath.value != null) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle,
+                            color: Colors.green, size: 50),
+                        Text(
+                            'Imagem processada e salva com sucesso em ${_outputImagePath.value}'),
+                      ],
+                    );
                   } else {
-                    return ValueListenableBuilder<String?>(
-                      valueListenable: _outputFilePath,
-                      builder: (context, outputPath, child) {
-                        if (outputPath != null) {
-                          return const Column(
-                            children: [
-                              Icon(Icons.check_circle,
-                                  color: Colors.green, size: 50),
-                              Text(
-                                  'Vídeo processado e adicionado com sucesso em $caminhoPasta'),
-                            ],
-                          );
-                        } else {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal:
-                                    30.0), // Espaçamento lateral de 30px
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width -
-                                    60, // Ajusta a largura para considerar o padding de 30px em cada lado
-                                maxHeight: MediaQuery.of(context).size.height *
-                                    0.8, // Limita a altura a 80% da tela
-                              ),
-                              child: _selectedFile != null
-                                  ? ImageWidget(
-                                      imageBytes: _mediaBytes,
-                                      file: _selectedFile!,
-                                    )
-                                  : const Center(
-                                      child: Text('Nenhuma mídia selecionada.'),
-                                    ),
-                            ),
-                          );
-                        }
-                      },
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 30.0),
+                      child: Center(
+                        child: Text('Nenhuma mídia selecionada.'),
+                      ),
                     );
                   }
                 },
-              ),
-            ),
-          ],
+              );
+            }
+          },
         ),
       ),
     );

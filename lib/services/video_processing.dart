@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:mobi_resize_flutter/env.dart';
-import 'package:path/path.dart' as p; // Importando a biblioteca path
+import 'package:path/path.dart' as p;
 
 abstract class VideoProcessingService {
   Future<String?> processVideo(File file);
