@@ -9,51 +9,76 @@ class MediaPickerScreen extends StatefulWidget {
   final VideoProcessingService videoProcessor;
 
   const MediaPickerScreen({
-    super.key,
+    Key? key,
     required this.imageProcessor,
     required this.videoProcessor,
-  });
+  }) : super(key: key);
 
   @override
   _MediaPickerScreenState createState() => _MediaPickerScreenState();
 }
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
-  // ValueNotifiers para estado de processamento e caminhos de saída
   final ValueNotifier<bool> _isProcessing = ValueNotifier(false);
-  final ValueNotifier<String?> _outputFilePath = ValueNotifier(null);
-  final ValueNotifier<String?> _outputImagePath = ValueNotifier(null);
+  final ValueNotifier<String?> _outputMediaPath = ValueNotifier(null);
 
-  Future<void> _selectMedia() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'mkv'],
-    );
+  Future<void> _selectAndProcessMedia() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'mkv'],
+      );
 
-    if (result != null && result.files.isNotEmpty) {
+      if (result == null || result.files.isEmpty) return;
+
       final filePath = result.files.single.path;
-      if (filePath != null) {
-        final File file = File(filePath);
+      if (filePath == null) return;
 
-        _isProcessing.value = true;
-        _outputFilePath.value = null;
-        _outputImagePath.value = null;
+      final File file = File(filePath);
+      _isProcessing.value = true;
+      _outputMediaPath.value = null;
 
-        if (result.files.single.extension?.toLowerCase() == 'mp4' ||
-            result.files.single.extension?.toLowerCase() == 'mov' ||
-            result.files.single.extension?.toLowerCase() == 'mkv') {
-          final String? processedVideoPath =
-              await widget.videoProcessor.processVideo(file);
-          _isProcessing.value = false;
-          _outputFilePath.value = processedVideoPath;
-        } else {
-          final String? processedImagePath =
-              await widget.imageProcessor.processImage(file);
-          _isProcessing.value = false;
-          _outputImagePath.value = processedImagePath;
-        }
+      if (_isVideoFile(result.files.single.extension)) {
+        await _processVideo(file);
+      } else {
+        await _processImage(file);
       }
+    } catch (e) {
+      _showError('Erro ao selecionar ou processar o arquivo: $e');
     }
+  }
+
+  bool _isVideoFile(String? extension) {
+    return ['mp4', 'mov', 'mkv'].contains(extension?.toLowerCase());
+  }
+
+  Future<void> _processVideo(File file) async {
+    try {
+      final processedVideoPath = await widget.videoProcessor.processVideo(file);
+      _outputMediaPath.value = processedVideoPath;
+    } catch (e) {
+      _showError('Erro ao processar vídeo: $e');
+    } finally {
+      _isProcessing.value = false;
+    }
+  }
+
+  Future<void> _processImage(File file) async {
+    try {
+      final processedImagePath = await widget.imageProcessor.processImage(file);
+      _outputMediaPath.value = processedImagePath;
+    } catch (e) {
+      _showError('Erro ao processar imagem: $e');
+    } finally {
+      _isProcessing.value = false;
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(message, style: const TextStyle(color: Colors.red))),
+    );
   }
 
   @override
@@ -66,20 +91,16 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         ),
         backgroundColor: Colors.blueGrey,
         actions: [
+          const Text(
+            'Selecione a mídia para processar ',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
           Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: Row(
-              children: [
-                const Text(
-                  'Selecione a mídia para processar ',
-                  style: TextStyle(color: Colors.white),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.upload_file,
-                      color: Colors.white, size: 30),
-                  onPressed: _selectMedia,
-                ),
-              ],
+            padding: const EdgeInsets.only(right: 18.0),
+            child: IconButton(
+              icon:
+                  const Icon(Icons.upload_file, color: Colors.white, size: 30),
+              onPressed: _selectAndProcessMedia,
             ),
           ),
         ],
@@ -90,43 +111,26 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           builder: (context, isProcessing, child) {
             if (isProcessing) {
               return const CircularProgressIndicator();
-            } else {
-              // Usando AnimatedBuilder para escutar ambos os ValueNotifiers
-              return AnimatedBuilder(
-                animation:
-                    Listenable.merge([_outputFilePath, _outputImagePath]),
-                builder: (context, child) {
-                  if (_outputFilePath.value != null) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle,
-                            color: Colors.green, size: 50),
-                        Text(
-                            'Vídeo processado e adicionado com sucesso em ${_outputFilePath.value}'),
-                      ],
-                    );
-                  } else if (_outputImagePath.value != null) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle,
-                            color: Colors.green, size: 50),
-                        Text(
-                            'Imagem processada e salva com sucesso em ${_outputImagePath.value}'),
-                      ],
-                    );
-                  } else {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 30.0),
-                      child: Center(
-                        child: Text('Nenhuma mídia selecionada.'),
-                      ),
-                    );
-                  }
-                },
-              );
             }
+            return ValueListenableBuilder<String?>(
+              valueListenable: _outputMediaPath,
+              builder: (context, outputPath, child) {
+                if (outputPath != null) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle,
+                          color: Colors.green, size: 50),
+                      Text('Mídia processada com sucesso em $outputPath'),
+                    ],
+                  );
+                }
+                return const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Center(child: Text('Nenhuma mídia selecionada.')),
+                );
+              },
+            );
           },
         ),
       ),
