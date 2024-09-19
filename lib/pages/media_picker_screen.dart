@@ -9,12 +9,13 @@ class MediaPickerScreen extends StatefulWidget {
   final VideoProcessingService videoProcessor;
 
   const MediaPickerScreen({
-    Key? key,
+    super.key,
     required this.imageProcessor,
     required this.videoProcessor,
-  }) : super(key: key);
+  });
 
   @override
+  // ignore: library_private_types_in_public_api
   _MediaPickerScreenState createState() => _MediaPickerScreenState();
 }
 
