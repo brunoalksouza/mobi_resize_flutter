@@ -54,7 +54,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
 
         // Atualiza o status para 'Processando'
         _mediaStatuses.value[i].status = 'Processando..';
-        _mediaStatuses.notifyListeners();
+        _mediaStatuses.value = List.from(_mediaStatuses.value);
 
         String? outputPath;
         if (_isVideoFile(file.extension)) {
@@ -69,7 +69,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         } else {
           _mediaStatuses.value[i].status = 'Erro';
         }
-        _mediaStatuses.notifyListeners();
+        _mediaStatuses.value = List.from(_mediaStatuses.value);
       }
     } catch (e) {
       _showError('Erro ao selecionar ou processar o arquivo: $e');
@@ -133,58 +133,108 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: ValueListenableBuilder<List<MediaStatus>>(
-          valueListenable: _mediaStatuses,
-          builder: (context, mediaStatuses, child) {
-            if (mediaStatuses.isNotEmpty) {
-              double progress = mediaStatuses
-                      .where(
-                          (m) => m.status == 'Concluído' || m.status == 'Erro')
-                      .length /
-                  mediaStatuses.length;
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ValueListenableBuilder<List<MediaStatus>>(
+              valueListenable: _mediaStatuses,
+              builder: (context, mediaStatuses, child) {
+                bool isProcessingComplete = mediaStatuses.isNotEmpty &&
+                    mediaStatuses.every(
+                        (m) => m.status == 'Concluído' || m.status == 'Erro');
 
-              return Column(
-                children: [
-                  if (_isProcessing.value)
-                    LinearProgressIndicator(value: progress),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Processadas: ${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: mediaStatuses.length,
-                      itemBuilder: (context, index) {
-                        final media = mediaStatuses[index];
-                        return ListTile(
-                          leading: Icon(
-                            media.status == 'Concluído'
-                                ? Icons.check_circle
-                                : media.status == 'Erro'
-                                    ? Icons.error
-                                    : Icons.hourglass_empty,
-                            color: media.status == 'Concluído'
-                                ? Colors.green
-                                : media.status == 'Erro'
-                                    ? Colors.red
-                                    : Colors.orange,
+                if (mediaStatuses.isNotEmpty) {
+                  double progress = mediaStatuses
+                          .where((m) =>
+                              m.status == 'Concluído' || m.status == 'Erro')
+                          .length /
+                      mediaStatuses.length;
+
+                  return Expanded(
+                    child: Column(
+                      children: [
+                        if (_isProcessing.value)
+                          LinearProgressIndicator(value: progress),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Processadas: ${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w400),
                           ),
-                          title: Text(media.fileName),
-                          subtitle: Text('Status: ${media.status}'),
-                        );
-                      },
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: mediaStatuses.length,
+                            itemBuilder: (context, index) {
+                              final media = mediaStatuses[index];
+                              return Card(
+                                elevation: 4,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 16),
+                                child: ListTile(
+                                  leading: Icon(
+                                    media.status == 'Concluído'
+                                        ? Icons.check_circle
+                                        : media.status == 'Erro'
+                                            ? Icons.error
+                                            : Icons.hourglass_empty,
+                                    color: media.status == 'Concluído'
+                                        ? Colors.green
+                                        : media.status == 'Erro'
+                                            ? Colors.red
+                                            : Colors.orange,
+                                  ),
+                                  title: Text(media.fileName),
+                                  subtitle: Text('Status: ${media.status}'),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        // if (isProcessingComplete)
+                        //   const Padding(
+                        //     padding: EdgeInsets.symmetric(vertical: 16.0),
+                        //     child: Card(
+                        //       color: Colors.lightBlueAccent,
+                        //       elevation: 2,
+                        //       child: Padding(
+                        //         padding: EdgeInsets.all(16.0),
+                        //         child: Text(
+                        //           'Redimensione mais mídias',
+                        //           style: TextStyle(
+                        //               fontSize: 18, color: Colors.white),
+                        //           textAlign: TextAlign.center,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ),
+                      ],
                     ),
-                  ),
-                ],
-              );
-            } else {
-              return const Text('Nenhuma mídia selecionada.');
-            }
-          },
+                  );
+                } else {
+                  return const Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image_not_supported,
+                              size: 100, color: Colors.grey),
+                          SizedBox(height: 20),
+                          Text(
+                            'Nenhuma mídia selecionada.',
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
         ),
       ),
     );
