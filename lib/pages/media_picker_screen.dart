@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:mobi_resize_flutter/services/image_processing.dart';
 import 'package:mobi_resize_flutter/services/video_processing.dart';
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:cross_file/cross_file.dart';
 
 class MediaStatus {
   final String fileName;
@@ -41,12 +43,19 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       if (result == null || result.files.isEmpty) return;
 
       _isProcessing.value = true;
-      _mediaStatuses.value = result.files.map((file) {
+      // Atualize o estado para adicionar os novos arquivos
+      final newMediaStatuses = result.files.map((file) {
         return MediaStatus(fileName: file.name);
       }).toList();
 
-      for (int i = 0; i < result.files.length; i++) {
-        final file = result.files[i];
+      // Combine os arquivos existentes com os novos
+      _mediaStatuses.value = [..._mediaStatuses.value, ...newMediaStatuses];
+
+      for (int i = _mediaStatuses.value.length - newMediaStatuses.length;
+          i < _mediaStatuses.value.length;
+          i++) {
+        final file = result
+            .files[i - (_mediaStatuses.value.length - newMediaStatuses.length)];
         final filePath = file.path;
         if (filePath == null) continue;
 
@@ -107,6 +116,55 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
       SnackBar(
           content: Text(message, style: const TextStyle(color: Colors.red))),
     );
+  }
+
+  Future<void> _processDroppedFiles(List<XFile> files) async {
+    try {
+      _isProcessing.value = true;
+
+      // Atualize o estado para adicionar os novos arquivos
+      final newMediaStatuses = files.map((xFile) {
+        return MediaStatus(fileName: xFile.name);
+      }).toList();
+
+      // Combine os arquivos existentes com os novos
+      _mediaStatuses.value = [..._mediaStatuses.value, ...newMediaStatuses];
+
+      for (int i = _mediaStatuses.value.length - newMediaStatuses.length;
+          i < _mediaStatuses.value.length;
+          i++) {
+        final xFile =
+            files[i - (_mediaStatuses.value.length - newMediaStatuses.length)];
+        final filePath = xFile.path;
+        if (filePath == null) continue;
+
+        final File fileObj = File(filePath);
+
+        // Atualiza o status para 'Processando'
+        _mediaStatuses.value[i].status = 'Processando..';
+        _mediaStatuses.value = List.from(_mediaStatuses.value);
+
+        String? outputPath;
+        final extension = xFile.name.split('.').last.toLowerCase();
+        if (_isVideoFile(extension)) {
+          outputPath = await _processVideo(fileObj);
+        } else {
+          outputPath = await _processImage(fileObj);
+        }
+
+        // Atualiza o status para 'Concluído' ou 'Erro'
+        if (outputPath != null) {
+          _mediaStatuses.value[i].status = 'Concluído';
+        } else {
+          _mediaStatuses.value[i].status = 'Erro';
+        }
+        _mediaStatuses.value = List.from(_mediaStatuses.value);
+      }
+    } catch (e) {
+      _showError('Erro ao processar arquivos: $e');
+    } finally {
+      _isProcessing.value = false;
+    }
   }
 
   @override
@@ -194,23 +252,28 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                             },
                           ),
                         ),
-                        // if (isProcessingComplete)
-                        //   const Padding(
-                        //     padding: EdgeInsets.symmetric(vertical: 16.0),
-                        //     child: Card(
-                        //       color: Colors.lightBlueAccent,
-                        //       elevation: 2,
-                        //       child: Padding(
-                        //         padding: EdgeInsets.all(16.0),
-                        //         child: Text(
-                        //           'Redimensione mais mídias',
-                        //           style: TextStyle(
-                        //               fontSize: 18, color: Colors.white),
-                        //           textAlign: TextAlign.center,
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   ),
+                        if (isProcessingComplete)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16.0),
+                            child: DropTarget(
+                              onDragDone: (details) async {
+                                await _processDroppedFiles(details.files);
+                              },
+                              child: Card(
+                                color: Colors.lightBlueAccent,
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'Redimensione mais mídias arrastando aqui',
+                                    style: const TextStyle(
+                                        fontSize: 18, color: Colors.white),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   );

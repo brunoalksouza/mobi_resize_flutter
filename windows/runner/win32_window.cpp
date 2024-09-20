@@ -5,40 +5,38 @@
 
 #include "resource.h"
 
+#include <shellapi.h>  
+
 namespace {
 
-/// Window attribute that enables dark mode window decorations.
-///
-/// Redefined in case the developer's machine has a Windows SDK older than
-/// version 10.0.22000.0.
-/// See: https://docs.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+// Atributo da janela que permite decorações de janela no modo escuro.
+// Redefinido caso o SDK do Windows do desenvolvedor seja anterior à versão 10.0.22000.0.
+// Veja: https://docs.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 
 constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 
-/// Registry key for app theme preference.
-///
-/// A value of 0 indicates apps should use dark mode. A non-zero or missing
-/// value indicates apps should use light mode.
+/// Chave do registro para preferência de tema do aplicativo.
+/// Um valor de 0 indica que os aplicativos devem usar o modo escuro. Um valor não zero ou ausente
+/// indica que os aplicativos devem usar o modo claro.
 constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
-  L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
 
-// The number of Win32Window objects that currently exist.
+// O número de objetos Win32Window que atualmente existem.
 static int g_active_window_count = 0;
 
 using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
 
-// Scale helper to convert logical scaler values to physical using passed in
-// scale factor
+// Função de escala para converter valores lógicos em físicos usando o fator de escala passado
 int Scale(int source, double scale_factor) {
   return static_cast<int>(source * scale_factor);
 }
 
-// Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
-// This API is only needed for PerMonitor V1 awareness mode.
+// Carrega dinamicamente a função |EnableNonClientDpiScaling| do módulo User32.
+// Essa API é necessária apenas para o modo de reconhecimento PerMonitor V1.
 void EnableFullDpiSupportIfAvailable(HWND hwnd) {
   HMODULE user32_module = LoadLibraryA("User32.dll");
   if (!user32_module) {
@@ -55,12 +53,12 @@ void EnableFullDpiSupportIfAvailable(HWND hwnd) {
 
 }  // namespace
 
-// Manages the Win32Window's window class registration.
+// Gerencia o registro da classe da janela Win32Window.
 class WindowClassRegistrar {
  public:
   ~WindowClassRegistrar() = default;
 
-  // Returns the singleton registrar instance.
+  // Retorna a instância singleton do registrador.
   static WindowClassRegistrar* GetInstance() {
     if (!instance_) {
       instance_ = new WindowClassRegistrar();
@@ -68,12 +66,11 @@ class WindowClassRegistrar {
     return instance_;
   }
 
-  // Returns the name of the window class, registering the class if it hasn't
-  // previously been registered.
+  // Retorna o nome da classe da janela, registrando a classe se ela ainda não tiver sido registrada.
   const wchar_t* GetWindowClass();
 
-  // Unregisters the window class. Should only be called if there are no
-  // instances of the window.
+  // Cancela o registro da classe da janela. Deve ser chamado apenas se não houver
+  // instâncias da janela.
   void UnregisterWindowClass();
 
  private:
@@ -146,6 +143,9 @@ bool Win32Window::Create(const std::wstring& title,
 
   UpdateTheme(window);
 
+  // Permitir que a janela aceite arquivos arrastados
+  DragAcceptFiles(window, TRUE);  // Adicionado para habilitar arrastar e soltar
+
   return OnCreate();
 }
 
@@ -200,7 +200,7 @@ Win32Window::MessageHandler(HWND hwnd,
     case WM_SIZE: {
       RECT rect = GetClientArea();
       if (child_content_ != nullptr) {
-        // Size and position the child window.
+        // Dimensiona e posiciona a janela filha.
         MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
                    rect.bottom - rect.top, TRUE);
       }
@@ -216,6 +216,27 @@ Win32Window::MessageHandler(HWND hwnd,
     case WM_DWMCOLORIZATIONCOLORCHANGED:
       UpdateTheme(hwnd);
       return 0;
+
+    // Adicionado para processar arquivos arrastados
+    case WM_DROPFILES: {
+      HDROP hDrop = reinterpret_cast<HDROP>(wparam);
+      UINT fileCount = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+
+      std::vector<std::wstring> droppedFiles;
+      for (UINT i = 0; i < fileCount; ++i) {
+        UINT fileNameLength = DragQueryFile(hDrop, i, NULL, 0) + 1;
+        std::wstring fileName(fileNameLength, L'\0');
+        DragQueryFile(hDrop, i, &fileName[0], fileNameLength);
+        fileName.resize(fileNameLength - 1);  // Remove o caractere nulo extra
+        droppedFiles.push_back(fileName);
+      }
+      DragFinish(hDrop);
+
+      // Envie os arquivos arrastados para o Flutter através de um canal de plataforma ou método apropriado
+      // Você precisará implementar essa parte no lado do Flutter
+
+      return 0;
+    }
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);
@@ -264,12 +285,12 @@ void Win32Window::SetQuitOnClose(bool quit_on_close) {
 }
 
 bool Win32Window::OnCreate() {
-  // No-op; provided for subclasses.
+  // Sem operação; fornecido para subclasses.
   return true;
 }
 
 void Win32Window::OnDestroy() {
-  // No-op; provided for subclasses.
+  // Sem operação; fornecido para subclasses.
 }
 
 void Win32Window::UpdateTheme(HWND const window) {
