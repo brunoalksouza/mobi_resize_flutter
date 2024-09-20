@@ -37,7 +37,6 @@ dependencies:
   ffi: ^2.1.2
   file_picker: ^8.0.6
   path: ^1.9.0
-  flutter_dropzone: ^4.0.3
 
 dev_dependencies:
   flutter_test:
