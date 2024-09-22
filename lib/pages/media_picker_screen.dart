@@ -98,74 +98,75 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            ValueListenableBuilder<List<MediaStatus>>(
-              valueListenable: _mediaStatuses,
-              builder: (context, mediaStatuses, child) {
-                bool isProcessingComplete = mediaStatuses.isNotEmpty &&
-                    mediaStatuses.every(
-                        (m) => m.status == 'Concluído' || m.status == 'Erro');
+      body: DropTarget(
+        onDragDone: (details) async {
+          await _processDroppedFiles(details.files);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ValueListenableBuilder<List<MediaStatus>>(
+                valueListenable: _mediaStatuses,
+                builder: (context, mediaStatuses, child) {
+                  bool isProcessingComplete = mediaStatuses.isNotEmpty &&
+                      mediaStatuses.every(
+                          (m) => m.status == 'Concluído' || m.status == 'Erro');
 
-                if (mediaStatuses.isNotEmpty) {
-                  double progress = mediaStatuses
-                          .where((m) =>
-                              m.status == 'Concluído' || m.status == 'Erro')
-                          .length /
-                      mediaStatuses.length;
+                  if (mediaStatuses.isNotEmpty) {
+                    double progress = mediaStatuses
+                            .where((m) =>
+                                m.status == 'Concluído' || m.status == 'Erro')
+                            .length /
+                        mediaStatuses.length;
 
-                  return Expanded(
-                    child: Column(
-                      children: [
-                        if (_isProcessing.value)
-                          LinearProgressIndicator(value: progress),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Processadas: ${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length}',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w400),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: mediaStatuses.length,
-                            itemBuilder: (context, index) {
-                              final media = mediaStatuses[index];
-                              return Card(
-                                elevation: 4,
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 16),
-                                child: ListTile(
-                                  leading: Icon(
-                                    media.status == 'Concluído'
-                                        ? Icons.check_circle
-                                        : media.status == 'Erro'
-                                            ? Icons.error
-                                            : Icons.hourglass_empty,
-                                    color: media.status == 'Concluído'
-                                        ? Colors.green
-                                        : media.status == 'Erro'
-                                            ? Colors.red
-                                            : Colors.orange,
-                                  ),
-                                  title: Text(media.fileName),
-                                  subtitle: Text('Status: ${media.status}'),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        if (isProcessingComplete)
+                    return Expanded(
+                      child: Column(
+                        children: [
+                          if (_isProcessing.value)
+                            LinearProgressIndicator(value: progress),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16.0),
-                            child: DropTarget(
-                              onDragDone: (details) async {
-                                await _processDroppedFiles(details.files);
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Processadas: ${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length}',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w400),
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: mediaStatuses.length,
+                              itemBuilder: (context, index) {
+                                final media = mediaStatuses[index];
+                                return Card(
+                                  elevation: 4,
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 16),
+                                  child: ListTile(
+                                    leading: Icon(
+                                      media.status == 'Concluído'
+                                          ? Icons.check_circle
+                                          : media.status == 'Erro'
+                                              ? Icons.error
+                                              : Icons.hourglass_empty,
+                                      color: media.status == 'Concluído'
+                                          ? Colors.green
+                                          : media.status == 'Erro'
+                                              ? Colors.red
+                                              : Colors.orange,
+                                    ),
+                                    title: Text(media.fileName),
+                                    subtitle: Text('Status: ${media.status}'),
+                                  ),
+                                );
                               },
+                            ),
+                          ),
+                          if (isProcessingComplete)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               child: InkWell(
                                 onTap: _selectAndProcessMedia,
                                 mouseCursor: SystemMouseCursors.click,
@@ -186,45 +187,45 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                                 ),
                               ),
                             ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return Expanded(
+                      child: Center(
+                        child: DropTarget(
+                          onDragDone: (details) async {
+                            await _processDroppedFiles(details.files);
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: _selectAndProcessMedia,
+                                color: Colors.grey,
+                                icon: const Icon(
+                                    Icons.image_not_supported_rounded,
+                                    size: 100),
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Nenhuma mídia selecionada',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              const Text(
+                                'Selecione ou arraste arquivos aqui',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
                           ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return Expanded(
-                    child: Center(
-                      child: DropTarget(
-                        onDragDone: (details) async {
-                          await _processDroppedFiles(details.files);
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: _selectAndProcessMedia,
-                              color: Colors.grey,
-                              icon: const Icon(
-                                  Icons.image_not_supported_rounded,
-                                  size: 100),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Nenhuma mídia selecionada',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            const Text(
-                              'Selecione ou arraste arquivos aqui',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ],
                         ),
                       ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
