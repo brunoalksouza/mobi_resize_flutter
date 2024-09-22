@@ -1,17 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:mobi_resize_flutter/services/image_processing.dart';
-import 'package:mobi_resize_flutter/services/video_processing.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
-
-class MediaStatus {
-  final String fileName;
-  String status; // 'Pendente', 'Processando', 'Concluído', 'Erro'
-
-  MediaStatus({required this.fileName, this.status = 'Pendente'});
-}
+import 'package:mobi_resize_flutter/models/media_status.dart';
+import 'package:mobi_resize_flutter/services/file_handler.dart';
+import 'package:mobi_resize_flutter/services/media_processor.dart';
+import 'package:mobi_resize_flutter/widgets/show_error.dart';
+import 'package:mobi_resize_flutter/services/image_processing.dart';
+import 'package:mobi_resize_flutter/services/video_processing.dart';
 
 class MediaPickerScreen extends StatefulWidget {
   final ImageProcessingService imageProcessor;
@@ -24,146 +19,58 @@ class MediaPickerScreen extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _MediaPickerScreenState createState() => _MediaPickerScreenState();
 }
 
 class _MediaPickerScreenState extends State<MediaPickerScreen> {
   final ValueNotifier<bool> _isProcessing = ValueNotifier(false);
   final ValueNotifier<List<MediaStatus>> _mediaStatuses = ValueNotifier([]);
+  late MediaProcessor _mediaProcessor;
+  final FileHandler _fileHandler = FileHandler();
 
-  Future<void> _selectAndProcessMedia() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'mkv'],
-        allowMultiple: true,
-      );
-
-      if (result == null || result.files.isEmpty) return;
-
-      _isProcessing.value = true;
-      // Atualize o estado para adicionar os novos arquivos
-      final newMediaStatuses = result.files.map((file) {
-        return MediaStatus(fileName: file.name);
-      }).toList();
-
-      // Combine os arquivos existentes com os novos
-      _mediaStatuses.value = [..._mediaStatuses.value, ...newMediaStatuses];
-
-      for (int i = _mediaStatuses.value.length - newMediaStatuses.length;
-          i < _mediaStatuses.value.length;
-          i++) {
-        final file = result
-            .files[i - (_mediaStatuses.value.length - newMediaStatuses.length)];
-        final filePath = file.path;
-        if (filePath == null) continue;
-
-        final File fileObj = File(filePath);
-
-        // Atualiza o status para 'Processando'
-        _mediaStatuses.value[i].status = 'Processando..';
-        _mediaStatuses.value = List.from(_mediaStatuses.value);
-
-        String? outputPath;
-        if (_isVideoFile(file.extension)) {
-          outputPath = await _processVideo(fileObj);
-        } else {
-          outputPath = await _processImage(fileObj);
-        }
-
-        // Atualiza o status para 'Concluído' ou 'Erro'
-        if (outputPath != null) {
-          _mediaStatuses.value[i].status = 'Concluído';
-        } else {
-          _mediaStatuses.value[i].status = 'Erro';
-        }
-        _mediaStatuses.value = List.from(_mediaStatuses.value);
-      }
-    } catch (e) {
-      _showError('Erro ao selecionar ou processar o arquivo: $e');
-    } finally {
-      _isProcessing.value = false;
-    }
-  }
-
-  bool _isVideoFile(String? extension) {
-    return ['mp4', 'mov', 'mkv'].contains(extension?.toLowerCase());
-  }
-
-  Future<String?> _processVideo(File file) async {
-    try {
-      final processedVideoPath = await widget.videoProcessor.processVideo(file);
-      return processedVideoPath;
-    } catch (e) {
-      _showError('Erro ao processar vídeo: $e');
-      return null;
-    }
-  }
-
-  Future<String?> _processImage(File file) async {
-    try {
-      final processedImagePath = await widget.imageProcessor.processImage(file);
-      return processedImagePath;
-    } catch (e) {
-      _showError('Erro ao processar imagem: $e');
-      return null;
-    }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(message, style: const TextStyle(color: Colors.red))),
+  @override
+  void initState() {
+    super.initState();
+    _mediaProcessor = MediaProcessor(
+      imageProcessor: widget.imageProcessor,
+      videoProcessor: widget.videoProcessor,
     );
   }
 
-  Future<void> _processDroppedFiles(List<XFile> files) async {
+  Future<void> _selectAndProcessMedia() async {
     try {
-      _isProcessing.value = true;
+      final files = await _fileHandler.selectFiles(
+        allowedExtensions: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'mkv'],
+      );
 
-      // Atualize o estado para adicionar os novos arquivos
-      final newMediaStatuses = files.map((xFile) {
-        return MediaStatus(fileName: xFile.name);
-      }).toList();
+      if (files.isEmpty) return;
 
-      // Combine os arquivos existentes com os novos
-      _mediaStatuses.value = [..._mediaStatuses.value, ...newMediaStatuses];
-
-      for (int i = _mediaStatuses.value.length - newMediaStatuses.length;
-          i < _mediaStatuses.value.length;
-          i++) {
-        final xFile =
-            files[i - (_mediaStatuses.value.length - newMediaStatuses.length)];
-        final filePath = xFile.path;
-        if (filePath == null) continue;
-
-        final File fileObj = File(filePath);
-
-        // Atualiza o status para 'Processando'
-        _mediaStatuses.value[i].status = 'Processando..';
-        _mediaStatuses.value = List.from(_mediaStatuses.value);
-
-        String? outputPath;
-        final extension = xFile.name.split('.').last.toLowerCase();
-        if (_isVideoFile(extension)) {
-          outputPath = await _processVideo(fileObj);
-        } else {
-          outputPath = await _processImage(fileObj);
-        }
-
-        // Atualiza o status para 'Concluído' ou 'Erro'
-        if (outputPath != null) {
-          _mediaStatuses.value[i].status = 'Concluído';
-        } else {
-          _mediaStatuses.value[i].status = 'Erro';
-        }
-        _mediaStatuses.value = List.from(_mediaStatuses.value);
-      }
+      await _mediaProcessor.processFiles(
+        files: files,
+        isProcessing: _isProcessing,
+        mediaStatuses: _mediaStatuses,
+        context: context,
+      );
     } catch (e) {
-      _showError('Erro ao processar arquivos: $e');
-    } finally {
-      _isProcessing.value = false;
+      ShowError(context, 'Erro ao selecionar ou processar o arquivo: $e');
+    }
+  }
+
+  Future<void> _processDroppedFiles(List<XFile> xfiles) async {
+    try {
+      final files = await _fileHandler.convertDroppedFiles(xfiles);
+
+      if (files.isEmpty) return;
+
+      await _mediaProcessor.processFiles(
+        files: files,
+        isProcessing: _isProcessing,
+        mediaStatuses: _mediaStatuses,
+        context: context,
+      );
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      ShowError(context, 'Erro ao processar arquivos: $e');
     }
   }
 
