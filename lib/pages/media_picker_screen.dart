@@ -259,16 +259,22 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                               onDragDone: (details) async {
                                 await _processDroppedFiles(details.files);
                               },
-                              child: Card(
-                                color: Colors.lightBlueAccent,
-                                elevation: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Text(
-                                    'Redimensione mais mídias arrastando aqui',
-                                    style: const TextStyle(
-                                        fontSize: 18, color: Colors.white),
-                                    textAlign: TextAlign.center,
+                              child: InkWell(
+                                onTap: _selectAndProcessMedia,
+                                mouseCursor: SystemMouseCursors.click,
+                                child: const Card(
+                                  color: Colors.blueGrey,
+                                  elevation: 2,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: Text(
+                                      'Redimensione mais mídias clicando ou arrastando aqui',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -278,19 +284,33 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                     ),
                   );
                 } else {
-                  return const Expanded(
+                  return Expanded(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image_not_supported,
-                              size: 100, color: Colors.grey),
-                          SizedBox(height: 20),
-                          Text(
-                            'Nenhuma mídia selecionada.',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ],
+                      child: DropTarget(
+                        onDragDone: (details) async {
+                          await _processDroppedFiles(details.files);
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: _selectAndProcessMedia,
+                              color: Colors.grey,
+                              icon: const Icon(
+                                  Icons.image_not_supported_rounded,
+                                  size: 100),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Nenhuma mídia selecionada',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            const Text(
+                              'Selecione ou arraste arquivos aqui',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
