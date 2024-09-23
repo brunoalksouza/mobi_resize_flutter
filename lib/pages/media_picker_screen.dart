@@ -193,31 +193,26 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                   } else {
                     return Expanded(
                       child: Center(
-                        child: DropTarget(
-                          onDragDone: (details) async {
-                            await _processDroppedFiles(details.files);
-                          },
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                onPressed: _selectAndProcessMedia,
-                                color: Colors.grey,
-                                icon: const Icon(
-                                    Icons.image_not_supported_rounded,
-                                    size: 100),
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Nenhuma mídia selecionada',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                              const Text(
-                                'Selecione ou arraste arquivos aqui',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: _selectAndProcessMedia,
+                              color: Colors.grey,
+                              icon: const Icon(
+                                  Icons.image_not_supported_rounded,
+                                  size: 100),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Nenhuma mídia selecionada',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            const Text(
+                              'Selecione ou arraste arquivos aqui',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ],
                         ),
                       ),
                     );
