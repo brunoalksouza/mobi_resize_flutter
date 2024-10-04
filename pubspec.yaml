@@ -38,6 +38,7 @@ dependencies:
   file_picker: ^8.0.6
   path: ^1.9.0
   desktop_drop: ^0.5.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +56,18 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-Italic.ttf
+          style: italic
+        - asset: assets/fonts/Inter-BoldItalic.ttf
+          weight: 700
+          style: italic
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

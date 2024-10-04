@@ -89,7 +89,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
             ),
             shadows: const [
               BoxShadow(
-                color: Color(0x11000000),
+                color: Color.fromARGB(26, 0, 0, 0),
                 blurRadius: 72.70,
                 offset: Offset(0, 0),
                 spreadRadius: 4,
@@ -191,9 +191,8 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                         mediaStatuses.length;
 
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (_isProcessing.value)
-                          LinearProgressIndicator(value: progress),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
@@ -211,6 +210,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                             itemBuilder: (context, index) {
                               final media = mediaStatuses[index];
                               return Card(
+                                color: const Color(0xFFF6F7F9),
                                 elevation: 4,
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 16),
@@ -220,20 +220,35 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                                         ? Icons.check_circle
                                         : media.status == 'Erro'
                                             ? Icons.error
-                                            : Icons.hourglass_empty,
+                                            : Icons.access_time,
                                     color: media.status == 'Concluído'
                                         ? Colors.green
                                         : media.status == 'Erro'
                                             ? Colors.red
-                                            : Colors.orange,
+                                            : const Color(0xFFFF9900),
                                   ),
                                   title: Text(
                                     media.fileName,
                                     style: const TextStyle(fontSize: 14),
                                   ),
-                                  subtitle: Text(
-                                    media.status,
-                                    style: const TextStyle(fontSize: 12),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        media.status,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                      LinearProgressIndicator(
+                                          color: media.status == 'Concluído'
+                                              ? Colors.green
+                                              : media.status == 'Erro'
+                                                  ? Colors.red
+                                                  : const Color(0xFFFF9900),
+                                          value: media.status == 'Concluído'
+                                              ? 1
+                                              : 0),
+                                    ],
                                   ),
                                 ),
                               );
