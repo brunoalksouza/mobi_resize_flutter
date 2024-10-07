@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mobi_resize_flutter/models/media_status.dart';
 import 'package:mobi_resize_flutter/services/file_handler.dart';
 import 'package:mobi_resize_flutter/services/media_processor.dart';
@@ -101,11 +102,11 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                 MainAxisSize.min, // Adjusted to take only needed space
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 552,
                 child: Text(
                   'Conversor de dimensões de mídia',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.black,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -129,7 +130,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.upload_file_outlined),
@@ -139,24 +140,24 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                           children: [
                             TextSpan(
                               text: 'Arraste e solte ou ',
-                              style: TextStyle(
-                                color: Color(0xFF282A37),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF282A37),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
                               text: 'escolha o arquivo',
-                              style: TextStyle(
-                                color: Color(0xFFA9579D),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFA9579D),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             TextSpan(
                               text: ' para fazer upload',
-                              style: TextStyle(
-                                color: Color(0xFF282A37),
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF282A37),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -165,10 +166,9 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                         ),
                       ),
                       SizedBox(
-                        width: 236,
                         child: Text(
                           'Selecione arquivos mp4, png e jpeg',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: Colors.black,
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
@@ -197,14 +197,14 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
                             '${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length} mídias concluídas',
-                            style: const TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
                         SizedBox(
-                          height: 200, // Set a fixed height for the list
+                          height: 200,
                           child: ListView.builder(
                             itemCount: mediaStatuses.length,
                             itemBuilder: (context, index) {
@@ -237,7 +237,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                                     children: [
                                       Text(
                                         media.status,
-                                        style: const TextStyle(fontSize: 12),
+                                        style: GoogleFonts.inter(fontSize: 12),
                                       ),
                                       LinearProgressIndicator(
                                           color: media.status == 'Concluído'
@@ -258,7 +258,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                       ],
                     );
                   }
-                  return const SizedBox(); // Shows nothing if no status
+                  return const SizedBox();
                 },
               ),
             ],
