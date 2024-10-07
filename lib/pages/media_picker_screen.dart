@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:flutter/material.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobi_resize_flutter/models/media_status.dart';
@@ -114,68 +114,73 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              InkWell(
-                mouseCursor: SystemMouseCursors.click,
-                onTap: _selectAndProcessMedia,
-                child: Container(
-                  width: double.infinity,
-                  height: 170,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                  clipBehavior: Clip.antiAlias,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side:
-                          const BorderSide(width: 1, color: Color(0xFFD5D8E2)),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.upload_file_outlined),
-                      SizedBox(height: 16),
-                      Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Arraste e solte ou ',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF282A37),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            TextSpan(
-                              text: 'escolha o arquivo',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFFA9579D),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' para fazer upload',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF282A37),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
+              DropTarget(
+                onDragDone: (details) async {
+                  await _processDroppedFiles(details.files);
+                },
+                child: InkWell(
+                  mouseCursor: SystemMouseCursors.click,
+                  onTap: _selectAndProcessMedia,
+                  child: Container(
+                    width: double.infinity,
+                    height: 170,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 40),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                            width: 1, color: Color(0xFFD5D8E2)),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      SizedBox(
-                        child: Text(
-                          'Selecione arquivos mp4, png e jpeg',
-                          style: GoogleFonts.inter(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.upload_file_outlined),
+                        const SizedBox(height: 16),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Arraste e solte ou ',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF282A37),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: 'escolha o arquivo',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFA9579D),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' para fazer upload',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF282A37),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                        SizedBox(
+                          child: Text(
+                            'Selecione arquivos mp4, png e jpeg',
+                            style: GoogleFonts.inter(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -184,12 +189,6 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                 valueListenable: _mediaStatuses,
                 builder: (context, mediaStatuses, child) {
                   if (mediaStatuses.isNotEmpty) {
-                    double progress = mediaStatuses
-                            .where((m) =>
-                                m.status == 'Concluído' || m.status == 'Erro')
-                            .length /
-                        mediaStatuses.length;
-
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -204,14 +203,16 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                           ),
                         ),
                         SizedBox(
-                          height: 200,
+                          height: (mediaStatuses.length <= 4
+                              ? mediaStatuses.length * 75.0
+                              : 300.0),
                           child: ListView.builder(
                             itemCount: mediaStatuses.length,
                             itemBuilder: (context, index) {
                               final media = mediaStatuses[index];
                               return Card(
                                 color: const Color(0xFFF6F7F9),
-                                elevation: 4,
+                                elevation: 0,
                                 margin: const EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 16),
                                 child: ListTile(
@@ -240,14 +241,16 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
                                         style: GoogleFonts.inter(fontSize: 12),
                                       ),
                                       LinearProgressIndicator(
-                                          color: media.status == 'Concluído'
-                                              ? Colors.green
-                                              : media.status == 'Erro'
-                                                  ? Colors.red
-                                                  : const Color(0xFFFF9900),
-                                          value: media.status == 'Concluído'
-                                              ? 1
-                                              : 0),
+                                        borderRadius: BorderRadius.circular(10),
+                                        backgroundColor:
+                                            const Color(0xFFF6F7F9),
+                                        color: media.status == 'Concluído'
+                                            ? Colors.green
+                                            : const Color(0xFFFF9900),
+                                        value: media.status == 'Concluído'
+                                            ? 1
+                                            : null,
+                                      ),
                                     ],
                                   ),
                                 ),
