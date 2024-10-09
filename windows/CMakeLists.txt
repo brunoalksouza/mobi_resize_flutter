@@ -51,7 +51,7 @@ add_subdirectory("runner")
 include(flutter/generated_plugins.cmake)
 
 # Path to FFmpeg binary directory.
-set(FFMPEG_BIN_DIR "D:/Users/bruno/Documents/Projects/MOBIPLUS/mobi_resize_image_flutter/ffmpeg/bin")
+set(FFMPEG_BIN_DIR "D:/Users/bruno/Documents/Projects/MOBIPLUS/mobi_resize_flutter/ffmpeg/bin")
 
 # Copy the FFmpeg executables to the output directory.
 install(DIRECTORY "${FFMPEG_BIN_DIR}/"
