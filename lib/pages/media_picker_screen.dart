@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:flutter/material.dart';
 import 'package:cross_file/cross_file.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mobi_resize_flutter/models/media_status.dart';
 import 'package:mobi_resize_flutter/services/file_handler.dart';
 import 'package:mobi_resize_flutter/services/media_processor.dart';
@@ -69,7 +70,6 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
         context: context,
       );
     } catch (e) {
-      // ignore: use_build_context_synchronously
       ShowError(context, 'Erro ao processar arquivos: $e');
     }
   }
@@ -77,146 +77,191 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Redimensionador de Mídia',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.blueGrey,
-        actions: [
-          const Text(
-            'Selecione a mídia para processar ',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 18.0),
-            child: IconButton(
-              icon:
-                  const Icon(Icons.upload_file, color: Colors.white, size: 30),
-              onPressed: _selectAndProcessMedia,
+      body: Center(
+        child: Container(
+          width: 600,
+          // Removed the fixed height
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          clipBehavior: Clip.antiAlias,
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
+            shadows: const [
+              BoxShadow(
+                color: Color.fromARGB(26, 0, 0, 0),
+                blurRadius: 72.70,
+                offset: Offset(0, 0),
+                spreadRadius: 4,
+              )
+            ],
           ),
-        ],
-      ),
-      body: DropTarget(
-        onDragDone: (details) async {
-          await _processDroppedFiles(details.files);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize:
+                MainAxisSize.min, // Adjusted to take only needed space
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(
+                width: 552,
+                child: Text(
+                  'Conversor de dimensões de mídia',
+                  style: GoogleFonts.inter(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              DropTarget(
+                onDragDone: (details) async {
+                  await _processDroppedFiles(details.files);
+                },
+                child: InkWell(
+                  mouseCursor: SystemMouseCursors.click,
+                  onTap: _selectAndProcessMedia,
+                  child: Container(
+                    width: double.infinity,
+                    height: 170,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 40),
+                    clipBehavior: Clip.antiAlias,
+                    decoration: ShapeDecoration(
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                            width: 1, color: Color(0xFFD5D8E2)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.upload_file_outlined),
+                        const SizedBox(height: 16),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Arraste e solte ou ',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF282A37),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: 'escolha o arquivo',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFA9579D),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' para fazer upload',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFF282A37),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          child: Text(
+                            'Selecione arquivos mp4, png e jpeg',
+                            style: GoogleFonts.inter(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Removed Expanded widget to prevent layout issues
               ValueListenableBuilder<List<MediaStatus>>(
                 valueListenable: _mediaStatuses,
                 builder: (context, mediaStatuses, child) {
-                  bool isProcessingComplete = mediaStatuses.isNotEmpty &&
-                      mediaStatuses.every(
-                          (m) => m.status == 'Concluído' || m.status == 'Erro');
-
                   if (mediaStatuses.isNotEmpty) {
-                    double progress = mediaStatuses
-                            .where((m) =>
-                                m.status == 'Concluído' || m.status == 'Erro')
-                            .length /
-                        mediaStatuses.length;
-
-                    return Expanded(
-                      child: Column(
-                        children: [
-                          if (_isProcessing.value)
-                            LinearProgressIndicator(value: progress),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Processadas: ${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length}',
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w400),
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '${mediaStatuses.where((m) => m.status == 'Concluído').length} de ${mediaStatuses.length} mídias concluídas',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: mediaStatuses.length,
-                              itemBuilder: (context, index) {
-                                final media = mediaStatuses[index];
-                                return Card(
-                                  elevation: 4,
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 16),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      media.status == 'Concluído'
-                                          ? Icons.check_circle
-                                          : media.status == 'Erro'
-                                              ? Icons.error
-                                              : Icons.hourglass_empty,
-                                      color: media.status == 'Concluído'
-                                          ? Colors.green
-                                          : media.status == 'Erro'
-                                              ? Colors.red
-                                              : Colors.orange,
-                                    ),
-                                    title: Text(media.fileName),
-                                    subtitle: Text('Status: ${media.status}'),
+                        ),
+                        SizedBox(
+                          height: (mediaStatuses.length <= 4
+                              ? mediaStatuses.length * 75.0
+                              : 300.0),
+                          child: ListView.builder(
+                            itemCount: mediaStatuses.length,
+                            itemBuilder: (context, index) {
+                              final media = mediaStatuses[index];
+                              return Card(
+                                color: const Color(0xFFF6F7F9),
+                                elevation: 0,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 16),
+                                child: ListTile(
+                                  leading: Icon(
+                                    media.status == 'Concluído'
+                                        ? Icons.check_circle
+                                        : media.status == 'Erro'
+                                            ? Icons.error
+                                            : Icons.access_time,
+                                    color: media.status == 'Concluído'
+                                        ? Colors.green
+                                        : media.status == 'Erro'
+                                            ? Colors.red
+                                            : const Color(0xFFFF9900),
                                   ),
-                                );
-                              },
-                            ),
-                          ),
-                          if (isProcessingComplete)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 16.0),
-                              child: InkWell(
-                                onTap: _selectAndProcessMedia,
-                                mouseCursor: SystemMouseCursors.click,
-                                child: const Card(
-                                  color: Colors.blueGrey,
-                                  elevation: 2,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: Text(
-                                      'Redimensione mais mídias clicando ou arrastando aqui',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.white,
+                                  title: Text(
+                                    media.fileName,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        media.status,
+                                        style: GoogleFonts.inter(fontSize: 12),
                                       ),
-                                      textAlign: TextAlign.center,
-                                    ),
+                                      LinearProgressIndicator(
+                                        borderRadius: BorderRadius.circular(10),
+                                        backgroundColor:
+                                            const Color(0xFFF6F7F9),
+                                        color: media.status == 'Concluído'
+                                            ? Colors.green
+                                            : const Color(0xFFFF9900),
+                                        value: media.status == 'Concluído'
+                                            ? 1
+                                            : null,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return Expanded(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: _selectAndProcessMedia,
-                              color: Colors.grey,
-                              icon: const Icon(
-                                  Icons.image_not_supported_rounded,
-                                  size: 100),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Nenhuma mídia selecionada',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            const Text(
-                              'Selecione ou arraste arquivos aqui',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ],
+                              );
+                            },
+                          ),
                         ),
-                      ),
+                      ],
                     );
                   }
+                  return const SizedBox();
                 },
               ),
             ],
