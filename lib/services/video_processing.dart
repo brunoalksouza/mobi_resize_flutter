@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:mobi_resize_flutter/services/get_default_downloads_directory.dart';
 import 'package:path/path.dart' as p;
-import 'package:mobi_resize_flutter/env.dart'; // Import para outras variáveis que você possa precisar
 
 abstract class VideoProcessingService {
   Future<String?> processVideo(File file);
