@@ -105,7 +105,7 @@ class _MediaPickerScreenState extends State<MediaPickerScreen> {
               SizedBox(
                 width: 552,
                 child: Text(
-                  'Conversor de dimensões de mídia',
+                  'Convdsdsadsadsadensões de mídia',
                   style: GoogleFonts.inter(
                     color: Colors.black,
                     fontSize: 20,
