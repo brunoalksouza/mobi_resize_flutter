@@ -8,6 +8,7 @@ import 'package:mobi_resize_flutter/pages/login_screen/login_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize the 'plataforma' Firebase app if not already initialized
   if (Firebase.apps.any((app) => app.name == 'plataforma')) {
     print('Firebase app "plataforma" already initialized');
   } else {

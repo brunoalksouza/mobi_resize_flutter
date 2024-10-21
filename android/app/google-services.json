@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "551897697221",
+    "project_id": "midias-uploader",
+    "storage_bucket": "midias-uploader.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:551897697221:android:c93ac3d5f396868f1999ac",
+        "android_client_info": {
+          "package_name": "com.midiasuploader.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi6Ulw3rmM1G3rv2WXoB4tCCc8VdXLAxo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
