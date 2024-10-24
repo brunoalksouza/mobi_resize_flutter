@@ -1,12 +1,12 @@
 # Project-level configuration.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.1)
 project(mobi_resize_flutter LANGUAGES CXX)
 
 # The name of the executable created for the application.
 set(BINARY_NAME "mobi_resize_flutter")
 
 # Explicitly opt in to modern CMake behaviors.
-cmake_policy(VERSION 3.14...3.25)
+cmake_policy(VERSION 3.1...3.25)
 
 # Define build configuration options.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
